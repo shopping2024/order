@@ -1,0 +1,56 @@
+server:
+  port: 8050
+spring:
+  datasource:
+         url: jdbc:mysql://localhost:3306/orderline
+         username: root
+         password: connect
+         driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  application:
+         name: ORDER-SERVICE
+
+
+
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        spring:json:type:mapping: orderConformation:com.ecom.kafka.OrderConformation
+
+
+
+myapp:
+      customer-url: http://localhost:8085/api/v1/customers
+      payment-url: http://localhost:8085/api/v1/payments
+      product-url: http://localhost:8085/api/v1/products
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: ALWAYS
+resilience4j:
+  circuitbreaker:
+    instances:
+      orderService:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
